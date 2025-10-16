@@ -1,0 +1,159 @@
+/* Sidebar Container */
+.sidebar {
+  width: 250px;
+  background: linear-gradient(180deg, #1e3a8a 0%, #111010 100%);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
+  font-family: 'Inter', sans-serif;
+  transition: width 0.3s ease;
+}
+
+/* Sidebar Header */
+.sidebar-header {
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.4rem;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  gap: 0.5rem;
+}
+.sidebar-header img {
+  height: 50px;
+  width: 50px;
+  border-radius: 8px;
+}
+
+/* Sidebar Nav */
+.sidebar-nav {
+  flex: 1;
+  padding: 1rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  overflow-y: auto;
+}
+
+/* Sidebar Links & Submenu Toggles */
+.sidebar-link,
+.submenu-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.sidebar-link:hover,
+.submenu-toggle:hover {
+  background: #e14704;
+  color: #fff;
+  transform: translateX(4px);
+}
+
+/* Active Link */
+.sidebar-link.active,
+.sidebar-sublink.active {
+  background:#e14704;
+  
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Submenu Container */
+.sidebar-submenu {
+  display: flex;
+  flex-direction: column;
+  padding-left: 1.25rem; /* indent submenu */
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+  transition: all 0.2s ease;
+}
+
+/* Submenu Links */
+.sidebar-sublink {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 0.5rem;
+  color: #cbd5e1; /* lighter gray */
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 400;
+  transition: all 0.2s ease;
+}
+
+.sidebar-sublink:hover {
+  background-color:#e14704;
+
+  color: #fff;
+  transform: translateX(4px);
+}
+
+/* Scrollbar Styling */
+.sidebar-nav::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background-color: rgba(255,255,255,0.2);
+  border-radius: 3px;
+}
+
+.sidebar-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Icon Styling */
+.sidebar-link svg,
+.sidebar-sublink svg {
+  font-size: 1rem;
+  color: #d1d5db;
+  transition: color 0.2s ease;
+}
+
+.sidebar-link:hover svg,
+.sidebar-sublink:hover svg {
+  color: #fff;
+}
+
+/* Submenu Toggle Arrow */
+.submenu-toggle::after {
+  content: '';
+  margin-left: auto;
+  transition: transform 0.3s ease;
+}
+
+.submenu-toggle[aria-expanded="true"]::after {
+  transform: rotate(180deg);
+}
+
+/* Responsive Hover Effect */
+@media (hover: hover) {
+  .sidebar-link:hover,
+  .sidebar-sublink:hover {
+    transform: translateX(6px);
+  }
+}
+.sidebar-link.active,
+.sidebar-sublink.active {
+  background: #e64906; /* Highlight color */
+  color: #fff;
+  font-weight: 600;
+}
+
+.sidebar-link.active svg,
+.sidebar-sublink.active svg {
+  color: #fff; /* icon color for active link */
+}
