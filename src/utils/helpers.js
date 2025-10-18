@@ -19,9 +19,9 @@ export function formatDate(date) {
  * - Automatically attaches token
  */
 const api = axios.create({
-  baseURL: "https://tms-git-main-cmts-projects-2ad7b35d.vercel.app/",
+  // baseURL: "https://tms-git-main-cmts-projects-2ad7b35d.vercel.app/",
   // baseURL: "http://localhost:3001/api",
-  //  baseURL: "https://tms.codemythought.com/api",
+   baseURL: "https://tms.codemythought.com/api",
   headers: {
     "Content-Type": "application/json",
   },
