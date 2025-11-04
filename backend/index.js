@@ -20,7 +20,9 @@ const donationTypeRoutes = require("./routes/donationTypeRoutes");
 
 const usertypeRoutes = require("./routes/usertypeRoutes");
 // app.use(cors());
-
+// if (!process.env.VISION360_API_URL || !process.env.VISION360_TOKEN) {
+//   throw new Error("Missing WhatsApp API configuration in .env file");
+// }
 app.use(cors(
   {
   origin: 'http://localhost:5173', // your frontend URLd

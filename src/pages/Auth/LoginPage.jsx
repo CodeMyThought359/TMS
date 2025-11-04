@@ -1,3 +1,197 @@
+// import React, { useRef, useEffect } from "react";
+// import { useSelector, useDispatch } from "react-redux";
+// import { useNavigate } from "react-router-dom";
+// import Input from "../../components/ui/Input";
+// import Button from "../../components/ui/Button";
+// import Alert from "../../components/ui/Alert";
+// import {
+//   loginUser,
+//   forgotPassword,
+//   verifyOtp,
+//   resetPassword,
+//   setStep,
+// } from "../../store/authSlice";
+// import "./LoginPage.css";
+
+// export default function LoginPage() {
+//   const dispatch = useDispatch();
+//   const navigate = useNavigate();
+//   const { step, loading, alert, token } = useSelector((state) => state.auth);
+
+//   const formRef = useRef({
+//     identifier: "",
+//     password: "",
+//     otp: "",
+//     newPassword: "",
+//   });
+
+//   const inputsRef = useRef([]);
+
+//   // Redirect if already logged in
+//   useEffect(() => {
+//     if (token) navigate("/dashboard");
+//   }, [token, navigate]);
+
+//   const handleChange = (e) => {
+//     formRef.current[e.target.name] = e.target.value.trim();
+//   };
+
+//   const handleOtpChange = (value, idx) => {
+//     if (/^[0-9]?$/.test(value)) {
+//       const otpArr = formRef.current.otp.split("");
+//       otpArr[idx] = value;
+//       formRef.current.otp = otpArr.join("");
+//       if (value && idx < 5) inputsRef.current[idx + 1]?.focus();
+//     }
+//   };
+
+//   const detectIdentifierType = (value) => {
+//     const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+//     const isPhone = /^\d{10,15}$/.test(value);
+//     if (isEmail) return "email";
+//     if (isPhone) return "phone";
+//     return "name";
+//   };
+
+//   const handleLogin = () => {
+//     const { identifier, password } = formRef.current;
+//     if (!identifier || !password)
+//       return alert("Please fill in all fields");
+
+//     const type = detectIdentifierType(identifier);
+//     dispatch(loginUser({ [type]: identifier, password }));
+//   };
+
+//   const handleForgotPassword = () => {
+//     const { identifier } = formRef.current;
+//     if (!identifier) return alert("Please enter your Email or Phone");
+
+//     const type = detectIdentifierType(identifier);
+//     dispatch(forgotPassword({ [type]: identifier }));
+//   };
+
+//   const handleVerifyOtp = () => {
+//     const { identifier, otp } = formRef.current;
+//     if (!otp || otp.length !== 6)
+//       return alert("Please enter valid 6-digit OTP");
+
+//     const type = detectIdentifierType(identifier);
+//     dispatch(verifyOtp({ [type]: identifier, otp }));
+//   };
+
+//   const handleResetPassword = () => {
+//     const { identifier, otp, newPassword } = formRef.current;
+//     if (!newPassword) return alert("Please enter new password");
+
+//     const type = detectIdentifierType(identifier);
+//     dispatch(resetPassword({ [type]: identifier, otp, newPassword }));
+//   };
+
+//   return (
+//     <div className="login-container">
+//       <div className="login-card">
+//         <h2>
+//           🔐{" "}
+//           {step === "login"
+//             ? "Login"
+//             : step === "forgot"
+//             ? "Forgot Password"
+//             : step === "otp"
+//             ? "Verify OTP"
+//             : "Reset Password"}
+//         </h2>
+
+//         {alert && <Alert type={alert.type} message={alert.message} />}
+//         {loading && <p className="loading-text">⏳ Processing...</p>}
+
+//         {/* ===== LOGIN ===== */}
+//         {step === "login" && (
+//           <>
+//             <Input
+//               label="Email / Phone / Username"
+//               name="identifier"
+//               placeholder="Enter Email, Phone, or Username"
+//               onChange={handleChange}
+//             />
+//             <Input
+//               label="Password"
+//               type="password"
+//               name="password"
+//               placeholder="Enter your password"
+//               onChange={handleChange}
+//             />
+//             <Button onClick={handleLogin}>Login</Button>
+//             <Button
+//               variant="secondary"
+//               onClick={() => dispatch(setStep("forgot"))}
+//             >
+//               Forgot Password?
+//             </Button>
+//           </>
+//         )}
+
+//         {/* ===== FORGOT PASSWORD ===== */}
+//         {step === "forgot" && (
+//           <>
+//             <Input
+//               label="Email or Phone"
+//               name="identifier"
+//               placeholder="Enter Email or Phone"
+//               onChange={handleChange}
+//             />
+//             <Button onClick={handleForgotPassword}>Send OTP</Button>
+//             <Button variant="secondary" onClick={() => dispatch(setStep("login"))}>
+//               Back to Login
+//             </Button>
+//           </>
+//         )}
+
+//         {/* ===== VERIFY OTP ===== */}
+//         {step === "otp" && (
+//           <>
+//             <p className="otp-instruction">
+//               Enter the 6-digit OTP sent to your email/phone
+//             </p>
+//             <div className="otp-inputs">
+//               {[...Array(6)].map((_, idx) => (
+//                 <input
+//                   key={idx}
+//                   type="text"
+//                   maxLength="1"
+//                   onChange={(e) => handleOtpChange(e.target.value, idx)}
+//                   ref={(el) => (inputsRef.current[idx] = el)}
+//                 />
+//               ))}
+//             </div>
+//             <Button onClick={handleVerifyOtp}>Verify OTP</Button>
+//             <Button variant="secondary" onClick={() => dispatch(setStep("forgot"))}>
+//               Back
+//             </Button>
+//           </>
+//         )}
+
+//         {/* ===== RESET PASSWORD ===== */}
+//         {step === "reset" && (
+//           <>
+//             <Input
+//               label="New Password"
+//               type="password"
+//               name="newPassword"
+//               placeholder="Enter new password"
+//               onChange={handleChange}
+//             />
+//             <Button onClick={handleResetPassword}>Reset Password</Button>
+//             <Button variant="secondary" onClick={() => dispatch(setStep("login"))}>
+//               Back to Login
+//             </Button>
+//           </>
+//         )}
+//       </div>
+//     </div>
+//   );
+// }
+
+
 import React, { useRef, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -19,7 +213,7 @@ export default function LoginPage() {
   const { step, loading, alert, token } = useSelector((state) => state.auth);
 
   const formRef = useRef({
-    identifier: "", // email / phone / username
+    identifier: "",
     password: "",
     otp: "",
     newPassword: "",
@@ -27,11 +221,15 @@ export default function LoginPage() {
 
   const inputsRef = useRef([]);
 
+  // Redirect if already logged in
+  useEffect(() => {
+    if (token) navigate("/dashboard");
+  }, [token, navigate]);
+
   const handleChange = (e) => {
-    formRef.current[e.target.name] = e.target.value;
+    formRef.current[e.target.name] = e.target.value.trim();
   };
 
-  // Handle OTP input
   const handleOtpChange = (value, idx) => {
     if (/^[0-9]?$/.test(value)) {
       const otpArr = formRef.current.otp.split("");
@@ -41,31 +239,62 @@ export default function LoginPage() {
     }
   };
 
-  // Redirect on login success
-  useEffect(() => {
-    if (token) navigate("/dashboard");
-  }, [token, navigate]);
-
-  // Detect input type (email / phone / username)
-  const getLoginPayload = () => {
-    const value = formRef.current.identifier.trim();
-    const password = formRef.current.password;
-
-    if (!value || !password) return null;
-
+  const detectIdentifierType = (value) => {
     const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
     const isPhone = /^\d{10,15}$/.test(value);
+    if (isEmail) return "email";
+    if (isPhone) return "phone";
+    return "name";
+  };
 
-    if (isEmail) return { email: value, password };
-    if (isPhone) return { phone: value, password };
-    return { name: value, password }; // fallback username
+  const handleLogin = () => {
+    const { identifier, password } = formRef.current;
+    if (!identifier || !password) {
+      alert("Please fill in all fields");
+      return;
+    }
+    const type = detectIdentifierType(identifier);
+    dispatch(loginUser({ [type]: identifier, password }));
+  };
+
+  const handleForgotPassword = () => {
+    const { identifier } = formRef.current;
+    if (!identifier) {
+      alert("Please enter your Email or Phone");
+      return;
+    }
+
+    const type = detectIdentifierType(identifier);
+    dispatch(forgotPassword({ [type]: identifier }));
+  };
+
+  const handleVerifyOtp = () => {
+    const { identifier, otp } = formRef.current;
+    if (!otp || otp.length !== 6) {
+      alert("Please enter valid 6-digit OTP");
+      return;
+    }
+
+    const type = detectIdentifierType(identifier);
+    dispatch(verifyOtp({ [type]: identifier, otp }));
+  };
+
+  const handleResetPassword = () => {
+    const { identifier, otp, newPassword } = formRef.current;
+    if (!newPassword) {
+      alert("Please enter a new password");
+      return;
+    }
+
+    const type = detectIdentifierType(identifier);
+    dispatch(resetPassword({ [type]: identifier, otp, newPassword }));
   };
 
   return (
     <div className="login-container">
       <div className="login-card">
         <h2>
-          🔑{" "}
+          🔐{" "}
           {step === "login"
             ? "Login"
             : step === "forgot"
@@ -84,28 +313,17 @@ export default function LoginPage() {
             <Input
               label="Email / Phone / Username"
               name="identifier"
-              onChange={handleChange}
               placeholder="Enter Email, Phone, or Username"
+              onChange={handleChange}
             />
             <Input
               label="Password"
               type="password"
               name="password"
+              placeholder="Enter your password"
               onChange={handleChange}
-              placeholder="Enter password"
             />
-            <Button
-              onClick={() => {
-                const payload = getLoginPayload();
-                if (!payload) {
-                  alert("Please enter all fields");
-                  return;
-                }
-                dispatch(loginUser(payload));
-              }}
-            >
-              Login
-            </Button>
+            <Button onClick={handleLogin}>Login</Button>
             <Button variant="secondary" onClick={() => dispatch(setStep("forgot"))}>
               Forgot Password?
             </Button>
@@ -118,20 +336,10 @@ export default function LoginPage() {
             <Input
               label="Email or Phone"
               name="identifier"
+              placeholder="Enter your Email or Phone"
               onChange={handleChange}
-              placeholder="Enter Email or Phone"
             />
-            <Button
-              onClick={() => {
-                const value = formRef.current.identifier.trim();
-                if (!value) return alert("Please enter Email or Phone");
-                const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-                const payload = isEmail ? { email: value } : { phone: value };
-                dispatch(forgotPassword(payload));
-              }}
-            >
-              Send OTP
-            </Button>
+            <Button onClick={handleForgotPassword}>Send OTP</Button>
             <Button variant="secondary" onClick={() => dispatch(setStep("login"))}>
               Back to Login
             </Button>
@@ -141,7 +349,9 @@ export default function LoginPage() {
         {/* ===== OTP VERIFY ===== */}
         {step === "otp" && (
           <>
-            <p className="otp-instruction">Enter the 6-digit code sent to your email/phone</p>
+            <p className="otp-instruction">
+              Enter the 6-digit OTP sent to your email or phone.
+            </p>
             <div className="otp-inputs">
               {[...Array(6)].map((_, idx) => (
                 <input
@@ -153,17 +363,7 @@ export default function LoginPage() {
                 />
               ))}
             </div>
-            <Button
-              onClick={() => {
-                const value = formRef.current.identifier.trim();
-                const otp = formRef.current.otp;
-                const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-                const payload = isEmail ? { email: value, otp } : { phone: value, otp };
-                dispatch(verifyOtp(payload));
-              }}
-            >
-              Verify OTP
-            </Button>
+            <Button onClick={handleVerifyOtp}>Verify OTP</Button>
             <Button variant="secondary" onClick={() => dispatch(setStep("forgot"))}>
               Back
             </Button>
@@ -177,23 +377,10 @@ export default function LoginPage() {
               label="New Password"
               type="password"
               name="newPassword"
-              onChange={handleChange}
               placeholder="Enter new password"
+              onChange={handleChange}
             />
-            <Button
-              onClick={() => {
-                const value = formRef.current.identifier.trim();
-                const otp = formRef.current.otp;
-                const newPassword = formRef.current.newPassword;
-                const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-                const payload = isEmail
-                  ? { email: value, otp, newPassword }
-                  : { phone: value, otp, newPassword };
-                dispatch(resetPassword(payload));
-              }}
-            >
-              Reset Password
-            </Button>
+            <Button onClick={handleResetPassword}>Reset Password</Button>
             <Button variant="secondary" onClick={() => dispatch(setStep("login"))}>
               Back to Login
             </Button>

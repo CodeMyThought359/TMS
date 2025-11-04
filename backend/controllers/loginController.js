@@ -1,10 +1,7 @@
-
-
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const transporter = require("../config/emailConfig");
-const twilio = require("twilio");
 const db = require("../config/db");
+const { sendOtp } = require("../utils/sendOtp");
 const {
   findAdminByEmail,
   findAdminByPhone,
@@ -13,262 +10,120 @@ const {
   updateAdminPasswordById,
 } = require("../models/loginModel");
 
-// In-memory OTP store (for demo purposes)
-const otpStore = {};
+const otpStore = {}; // Temporary memory store
 
-// Twilio client
-const twilioClient = twilio(process.env.TWILIO_SID, process.env.TWILIO_AUTH_TOKEN);
-
-// ======================== LOGIN ========================
-// const login = (req, res) => {
-//   const { email, password } = req.body;
-
-//   findAdminByEmail(email, (err, admin) => {
-//     if (err) return res.status(500).json({ message: "Database error" });
-//     if (!admin) return res.status(401).json({ message: "Invalid email or password" });
-
-//     const isMatch = bcrypt.compareSync(password, admin.password);
-//     if (!isMatch) return res.status(401).json({ message: "Invalid email or password" });
-
-//     const token = jwt.sign(
-//       {
-//         adminId: admin.id,
-//         email: admin.email,
-//         temple_id: admin.temple_id,
-//         role: admin.role,
-//       },
-//       process.env.JWT_SECRET,
-//       { expiresIn: "1h" }
-//     );
-
-//     res
-//       .cookie("token", token, {
-//         httpOnly: true,
-//         secure: process.env.NODE_ENV === "production",
-//         sameSite: "Strict",
-//         maxAge: 60 * 60 * 1000,
-//       })
-//       .json({
-//         message: "Login successful",
-//         token,
-//         email: admin.email,
-//         temple_id: admin.temple_id,
-//         role: admin.role,
-//       });
-//   });
-// };
-
-// ======================== LOGIN ========================
+// ================= LOGIN =================
 const login = (req, res) => {
   const { email, phone, name, password } = req.body;
+  if (!email && !phone && !name)
+    return res.status(400).json({ message: "Email, phone, or name required" });
 
-  if (!email && !phone && !name) {
-    return res.status(400).json({ message: "Email, phone, or name is required" });
-  }
-
-  // Build SQL query dynamically
-  let sql = "SELECT * FROM admin WHERE ";
+  const field = email ? "email" : phone ? "phone" : "name";
   const value = email || phone || name;
 
-  if (email) sql += "email = ?";
-  else if (phone) sql += "phone = ?";
-  else if (name) sql += "name = ?";
-
-  db.query(sql, [value], (err, results) => {
+  db.query(`SELECT * FROM admin WHERE ${field} = ?`, [value], (err, results) => {
     if (err) return res.status(500).json({ message: "Database error" });
-    if (results.length === 0)
-      return res.status(401).json({ message: "Invalid credentials" });
+    if (results.length === 0) return res.status(401).json({ message: "Invalid credentials" });
 
     const admin = results[0];
-
-    // Compare password
-    const isMatch = bcrypt.compareSync(password, admin.password);
-    if (!isMatch)
+    if (!bcrypt.compareSync(password, admin.password))
       return res.status(401).json({ message: "Invalid credentials" });
 
-    // Create JWT
     const token = jwt.sign(
-      {
-        adminId: admin.id,
-        email: admin.email,
-        temple_id: admin.temple_id,
-        role: admin.role,
-      },
+      { adminId: admin.id, email: admin.email, temple_id: admin.temple_id, role: admin.role },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
 
-    res
-      .cookie("token", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "Strict",
-        maxAge: 60 * 60 * 1000,
-      })
-      .json({
-        message: "Login successful",
-        token,
-        email: admin.email,
-        temple_id: admin.temple_id,
-        role: admin.role,
-      });
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Strict",
+      maxAge: 60 * 60 * 1000,
+    }).json({ message: "Login successful", token, role: admin.role });
   });
 };
-// ======================== FORGOT PASSWORD ========================
+
+// ================= FORGOT PASSWORD (Auto Email or WhatsApp) =================
 const forgotPassword = async (req, res) => {
   const { email, phone } = req.body;
-
-  if (!email && !phone) {
-    return res.status(400).json({ message: "Email or phone is required" });
-  }
+  if (!email && !phone)
+    return res.status(400).json({ message: "Email or phone required" });
 
   const otp = Math.floor(100000 + Math.random() * 900000);
 
   try {
-    if (email) {
-      findAdminByEmail(email, async (err, admin) => {
-        if (err) return res.status(500).json({ message: "Database error" });
-        if (!admin) return res.status(404).json({ message: "Email not found" });
+    const findFn = email ? findAdminByEmail : findAdminByPhone;
+    const identifier = email || phone;
 
-        otpStore[email] = { otp, expiresAt: Date.now() + 5 * 60 * 1000 };
+    findFn(identifier, async (err, admin) => {
+      if (err) return res.status(500).json({ message: "DB error" });
+      if (!admin)
+        return res.status(404).json({ message: email ? "Email not found" : "Phone not found" });
 
-        await transporter.sendMail({
-          from: process.env.EMAIL_USER,
-          to: email,
-          subject: "Password Reset OTP",
-          text: `Hello ${admin.email},\n\nYour OTP is ${otp}. It expires in 5 minutes.`,
-        });
+      otpStore[identifier] = { otp, expiresAt: Date.now() + 5 * 60 * 1000 };
 
-        return res.json({ message: "OTP sent to your email" });
-      });
-    }
-
-    if (phone) {
-      findAdminByPhone(phone, async (err, admin) => {
-        if (err) return res.status(500).json({ message: "Database error" });
-        if (!admin) return res.status(404).json({ message: "Phone not found" });
-
-        otpStore[phone] = { otp, expiresAt: Date.now() + 5 * 60 * 1000 };
-
-        let formattedPhone = phone.replace(/\s+/g, "");
-        if (!formattedPhone.startsWith("+")) formattedPhone = `+91${formattedPhone}`;
-
-        await twilioClient.messages.create({
-          body: `Hello ${admin.email}, your OTP is ${otp}. It expires in 5 minutes.`,
-          from: process.env.TWILIO_PHONE_NUMBER,
-          to: formattedPhone,
-        });
-
-        return res.json({ message: "OTP sent to your phone" });
-      });
-    }
-  } catch (err) {
-    console.error(err);
+      await sendOtp({ email, phone, otp, userEmail: admin.email });
+      res.json({ message: `OTP sent to ${email ? "email" : "WhatsApp"}` });
+    });
+  } catch (error) {
+    console.error("OTP error:", error);
     res.status(500).json({ message: "Failed to send OTP" });
   }
 };
 
-// ======================== VERIFY OTP ========================
+// ================= VERIFY OTP =================
 const verifyOtp = (req, res) => {
   const { email, phone, otp } = req.body;
   const key = email || phone;
-
-  if (!key || !otp) return res.status(400).json({ message: "Email/Phone and OTP are required" });
-
   const stored = otpStore[key];
+
   if (!stored) return res.status(400).json({ message: "No OTP found" });
+  if (Date.now() > stored.expiresAt) return res.status(400).json({ message: "OTP expired" });
+  if (parseInt(otp) !== stored.otp) return res.status(400).json({ message: "Invalid OTP" });
 
-  if (Date.now() > stored.expiresAt) {
-    delete otpStore[key];
-    return res.status(400).json({ message: "OTP expired" });
-  }
-
-  if (parseInt(otp) !== stored.otp) {
-    return res.status(400).json({ message: "Invalid OTP" });
-  }
-
-  res.json({ message: "OTP verified successfully" });
+  res.json({ message: "OTP verified" });
 };
 
-// ======================== RESET PASSWORD ========================
+// ================= RESET PASSWORD =================
 const resetPassword = (req, res) => {
   const { email, phone, otp, newPassword } = req.body;
   const key = email || phone;
-
-  if (!key || !otp || !newPassword) {
-    return res.status(400).json({ message: "Email/Phone, OTP, and new password are required" });
-  }
-
   const stored = otpStore[key];
+
   if (!stored) return res.status(400).json({ message: "No OTP found" });
+  if (Date.now() > stored.expiresAt) return res.status(400).json({ message: "OTP expired" });
+  if (parseInt(otp) !== stored.otp) return res.status(400).json({ message: "Invalid OTP" });
 
-  if (Date.now() > stored.expiresAt) {
+  const hashed = bcrypt.hashSync(newPassword, 10);
+  const updateFn = email ? updateAdminPasswordByEmail : updateAdminPasswordByPhone;
+
+  updateFn(key, hashed, (err) => {
+    if (err) return res.status(500).json({ message: "DB error" });
     delete otpStore[key];
-    return res.status(400).json({ message: "OTP expired" });
-  }
-
-  if (parseInt(otp) !== stored.otp) {
-    return res.status(400).json({ message: "Invalid OTP" });
-  }
-
-  const hashedPassword = bcrypt.hashSync(newPassword, 10);
-
-  if (email) {
-    updateAdminPasswordByEmail(email, hashedPassword, (err) => {
-      if (err) return res.status(500).json({ message: "Database error" });
-
-      delete otpStore[key];
-      res.json({ message: "Password reset successful" });
-    });
-  } else if (phone) {
-    updateAdminPasswordByPhone(phone, hashedPassword, (err) => {
-      if (err) return res.status(500).json({ message: "Database error" });
-
-      delete otpStore[key];
-      res.json({ message: "Password reset successful" });
-    });
-  }
+    res.json({ message: "Password reset successful" });
+  });
 };
 
-// ======================== CHANGE PASSWORD ========================
+// ================= CHANGE PASSWORD =================
 const changePassword = (req, res) => {
   const { oldPassword, newPassword } = req.body;
-  const { adminId, role, temple_id } = req.user; // from JWT
+  const { adminId } = req.user;
 
-  if (!oldPassword || !newPassword) {
-    return res.status(400).json({ message: "Old and new password required" });
-  }
-
-  // Fetch admin by ID
-  const sql = "SELECT * FROM admin WHERE id = ?";
-  db.query(sql, [adminId], (err, results) => {
-    if (err) return res.status(500).json({ message: "Database error" });
-    if (results.length === 0) return res.status(404).json({ message: "Admin not found" });
+  db.query("SELECT * FROM admin WHERE id = ?", [adminId], (err, results) => {
+    if (err) return res.status(500).json({ message: "DB error" });
+    if (!results.length) return res.status(404).json({ message: "Admin not found" });
 
     const admin = results[0];
+    if (!bcrypt.compareSync(oldPassword, admin.password))
+      return res.status(401).json({ message: "Old password incorrect" });
 
-    // Validate token info
-    if (admin.temple_id !== temple_id || admin.role !== role) {
-      return res.status(403).json({ message: "Forbidden: Token mismatch" });
-    }
-
-    // Check old password
-    const isMatch = bcrypt.compareSync(oldPassword, admin.password);
-    if (!isMatch) return res.status(401).json({ message: "Old password incorrect" });
-
-    // Hash and update
-    const hashedPassword = bcrypt.hashSync(newPassword, 10);
-    updateAdminPasswordById(adminId, hashedPassword, (err) => {
-      if (err) return res.status(500).json({ message: "Database error" });
+    const hashed = bcrypt.hashSync(newPassword, 10);
+    updateAdminPasswordById(adminId, hashed, (err) => {
+      if (err) return res.status(500).json({ message: "DB error" });
       res.json({ message: "Password changed successfully" });
     });
   });
 };
 
-module.exports = {
-  login,
-  forgotPassword,
-  verifyOtp,
-  resetPassword,
-  changePassword,
-};
+module.exports = { login, forgotPassword, verifyOtp, resetPassword, changePassword };
