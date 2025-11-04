@@ -190,4 +190,3 @@ const authSlice = createSlice({
 
 export const { setStep, setAlert, logout } = authSlice.actions;
 export default authSlice.reducer;
-
