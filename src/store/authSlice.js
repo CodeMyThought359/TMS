@@ -15,9 +15,9 @@ import {
 // Login
 export const loginUser = createAsyncThunk(
   "auth/loginUser",
-  async ({ email, password }, { rejectWithValue }) => {
+  async ({ email,name,phone, password }, { rejectWithValue }) => {
     try {
-      const res = await loginApi({ email, password });
+      const res = await loginApi({ email,name,phone, password });
       // Save tokens/roles locally
       localStorage.setItem("token", res.token);
       localStorage.setItem("role", res.role);
@@ -190,3 +190,4 @@ const authSlice = createSlice({
 
 export const { setStep, setAlert, logout } = authSlice.actions;
 export default authSlice.reducer;
+
