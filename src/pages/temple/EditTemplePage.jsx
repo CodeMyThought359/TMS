@@ -5,7 +5,7 @@ import { apiGet, apiPut } from "../../utils/helpers";
 import { useParams, useNavigate } from "react-router-dom";
 import IconButton from "../../components/ui/IconButton";
 import { FaList } from "react-icons/fa";
-import { validateTempleForm } from "../../utils/validation";
+import { validateTempleForm, checkTemplePhoneExists } from "../../utils/validation";
 
 function EditTemplePage() {
   const { id } = useParams();
@@ -15,8 +15,9 @@ function EditTemplePage() {
   const [form, setForm] = useState(null);
   const [loading, setLoading] = useState(true);
   const [alert, setAlert] = useState(null);
+  const [checking, setChecking] = useState(false);
 
-  // Fetch temple by ID
+  // ✅ Fetch temple by ID
   useEffect(() => {
     const fetchTemple = async () => {
       setLoading(true);
@@ -36,31 +37,47 @@ function EditTemplePage() {
     fetchTemple();
   }, [id, token]);
 
-  // Handle input change
+  // ✅ Handle input change
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle submit
+  // ✅ Handle submit
   const handleSubmit = async () => {
-    // if (!form.name || !form.location) {
-    //   setAlert({ type: "error", message: "❌ Please fill required fields" });
-    //   return;
-    // }
- const { valid, message } = validateTempleForm(form);
+    const { valid, message } = validateTempleForm(form);
     if (!valid) {
       setAlert({ type: "error", message });
       return;
     }
+
+    // ✅ Step 2: Check if phone number already exists (ignore same temple)
+    setChecking(true);
+    const exists = await checkTemplePhoneExists(form.phone, id);
+    setChecking(false);
+
+    if (exists) {
+      setAlert({
+        type: "error",
+        message: "❌ This phone number is already registered with another temple.",
+      });
+      return;
+    }
+
+    // ✅ Clean up data before sending
     const { id: _id, created_at, ...updateData } = form;
 
     try {
       await apiPut(`/temples/${id}`, updateData, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setAlert({ type: "success", message: "✅ Temple updated successfully" });
-      setTimeout(() => navigate("/temple-table"), 1000);
+      setAlert({ type: "success", message: "✅ Temple updated successfully!" });
+
+      // Auto dismiss and redirect
+      setTimeout(() => {
+        setAlert(null);
+        navigate("/temple-table");
+      }, 1200);
     } catch (err) {
       console.error("API Error:", err);
       setAlert({ type: "error", message: "❌ Failed to update temple" });
@@ -68,21 +85,26 @@ function EditTemplePage() {
   };
 
   if (loading) return <p>Loading...</p>;
-  if (!form) return <p>No temple found</p>;
+  if (!form) return <p>No temple found.</p>;
 
-  // Generate form fields dynamically (skip read-only)
-  const fields = Object.keys(form)
-    .filter((key) => key !== "id" && key !== "created_at")
-    .map((key) => ({
-      name: key,
-      label: key.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
-    }));
+  // ✅ Define fields explicitly for consistent UX
+  const fields = [
+    { name: "phone", label: "Temple Phone", type: "number" },
+    { name: "name", label: "Temple Name", type: "text" },
+    { name: "location", label: "Location", type: "text" },
+    { name: "description", label: "Description", type: "text" },
+  ];
 
   return (
     <div className="p-6 max-w-xl mx-auto">
       <div
         className="header"
-        style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "12px",
+        }}
       >
         <h2>🏛️ Edit Temple</h2>
         <IconButton
@@ -92,14 +114,19 @@ function EditTemplePage() {
         />
       </div>
 
-      {alert && <Alert type={alert.type} onClose={() => setAlert(null)}>{alert.message}</Alert>}
+      {alert && (
+        <Alert type={alert.type} onClose={() => setAlert(null)}>
+          {alert.message}
+        </Alert>
+      )}
 
       <Form
         fields={fields}
         values={form}
         onChange={handleChange}
         onSubmit={handleSubmit}
-        submitLabel="Save Changes"
+        submitLabel={checking ? "Checking..." : "Save Changes"}
+        disabled={checking}
       />
     </div>
   );

@@ -10,16 +10,18 @@ import { FaEdit, FaTrash, FaPlus, FaList } from "react-icons/fa";
 import IconButton from "../../components/ui/IconButton";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchDevotees, deleteDevotee, clearAlert } from "../../store/devoteesSlice";
+import { getTempleIdFromToken } from "../../utils/token";
 
 function DevoteesTablePage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const temple_id = getTempleIdFromToken();
   const { list, loading, error, success } = useSelector((state) => state.devotees);
   const [dialog, setDialog] = useState({ open: false, item: null });
 
   const token = localStorage.getItem("token");
   const role = localStorage.getItem("role");
-  const temple_id = localStorage.getItem("temple_id"); // ✅ get temple_id
+  // const temple_id = localStorage.getItem("temple_id"); // ✅ get temple_id
 
   useEffect(() => {
     dispatch(fetchDevotees());

@@ -8,7 +8,7 @@ import Button from "../../components/ui/Button";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchDevotees, addDevotee, clearAlert } from "../../store/devoteesSlice";
 import { useNavigate, Link } from "react-router-dom";
-
+import { getTempleIdFromToken } from "../../utils/token";
 import IconButton from "../../components/ui/IconButton";
 import { FaList } from "react-icons/fa";
 
@@ -17,7 +17,8 @@ function DevoteesPage() {
   const navigate = useNavigate();
   const { list, loading, error, success } = useSelector((state) => state.devotees);
 
-  const temple_id = localStorage.getItem("temple_id");
+  const temple_id = getTempleIdFromToken();
+  // localStorage.getItem("temple_id");
 
   const [form, setForm] = useState({
     first_name: "", last_name: "", gothra: "", nakshatra: "", rashi: "",

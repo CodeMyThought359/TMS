@@ -6,39 +6,39 @@ import { apiGet, apiPost } from "../../utils/helpers";
 import { useNavigate } from "react-router-dom";
 import IconButton from "../../components/ui/IconButton";
 import { FaList } from "react-icons/fa";
-
+import { getTempleIdFromToken } from "../../utils/token";
 function SevaPage() {
   const navigate = useNavigate();
   const role = useSelector((state) => state.auth.role);
   const token = localStorage.getItem("token");
-
+const temple_id = getTempleIdFromToken();
   const [form, setForm] = useState({
     name: "",
    
-    temple_id: "",
+    temple_id: temple_id || "",
   });
 
   const [temples, setTemples] = useState([]);
   const [alert, setAlert] = useState(null);
 
  
-  useEffect(() => {
-    const fetchTemples = async () => {
-      try {
-        const res = await apiGet("/temples", { headers: { Authorization: `Bearer ${token}` } });
-        const options = (res.data || res).map((t) => ({ value: t.id, label: t.name }));
-        setTemples([{ value: "", label: "Select temple" }, ...options]);
-      } catch (err) {
-        console.error("Failed to fetch temples:", err);
-      }
-    };
-    fetchTemples();
-  }, [token]);
+  // useEffect(() => {
+  //   const fetchTemples = async () => {
+  //     try {
+  //       const res = await apiGet("/temples", { headers: { Authorization: `Bearer ${token}` } });
+  //       const options = (res.data || res).map((t) => ({ value: t.id, label: t.name }));
+  //       setTemples([{ value: "", label: "Select temple" }, ...options]);
+  //     } catch (err) {
+  //       console.error("Failed to fetch temples:", err);
+  //     }
+  //   };
+  //   fetchTemples();
+  // }, [token]);
 
   const fields = [
     { name: "name", label: "Deity Name", type: "text", placeholder: "Enter seva name" },
    
-    { name: "temple_id", label: "Temple", type: "select", options: temples },
+    // { name: "temple_id", label: "Temple", type: "select", options: temples },
   ];
 
   const handleChange = (e) => {

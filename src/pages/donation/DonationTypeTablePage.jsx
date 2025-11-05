@@ -11,11 +11,11 @@ import { apiGet, apiDelete } from "../../utils/helpers";
 import { useNavigate } from "react-router-dom";
 import { FaEdit, FaTrash, FaPlus, FaList } from "react-icons/fa";
 import IconButton from "../../components/ui/IconButton";
-
+import { getTempleIdFromToken } from "../../utils/token";
 function DonationTypeTablePage() {
   const navigate = useNavigate();
-  const temple_id = localStorage.getItem("temple_id"); // ✅ Get temple ID from storage
-
+  // const temple_id = localStorage.getItem("temple_id"); // ✅ Get temple ID from storage
+const temple_id = getTempleIdFromToken();
   const columns = [
     { field: "id", label: "ID" },
     { field: "name", label: "Donation Type Name" },

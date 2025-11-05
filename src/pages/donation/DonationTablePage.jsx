@@ -11,13 +11,14 @@ import { apiGet, apiDelete } from "../../utils/helpers";
 import { useNavigate } from "react-router-dom";
 import { FaEdit, FaTrash, FaTimes, FaPlus, FaList } from "react-icons/fa";
 import IconButton from "../../components/ui/IconButton";
+import { getTempleIdFromToken } from "../../utils/token";
 
 function DonationTablePage() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const role = localStorage.getItem("role");
-  const temple_id = localStorage.getItem("temple_id"); // ✅ get temple_id
-
+  // const temple_id = localStorage.getItem("temple_id"); // ✅ get temple_id
+  const temple_id = getTempleIdFromToken();
   const columns = [
     { field: "id", label: "ID" },
     { field: "amount", label: "Amount" },

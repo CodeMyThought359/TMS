@@ -3,16 +3,16 @@ import Form from "../../components/ui/Form";
 import Alert from "../../components/ui/Alert";
 import { apiGet, apiPut, apiGet as apiGetTemples } from "../../utils/helpers";
 import { useParams, useNavigate } from "react-router-dom";
-
+import { getTempleIdFromToken } from "../../utils/token";
 function EditDonationTypePage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
-
+const temple_id = getTempleIdFromToken();
   const [form, setForm] = useState({
     name: "",
     amount: "",
-    temple_id: "",
+    temple_id: temple_id || "",
   });
   const [temples, setTemples] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -91,7 +91,7 @@ function EditDonationTypePage() {
   const fields = [
     { name: "name", label: "Donation Type Name", type: "text" },
     { name: "amount", label: "Amount", type: "number" },
-    { name: "temple_id", label: "Temple", type: "select", options: temples },
+    // { name: "temple_id", label: "Temple", type: "select", options: temples },
   ];
 
   return (

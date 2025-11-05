@@ -10,10 +10,13 @@ import { apiGet, apiDelete } from "../../utils/helpers";
 import { useNavigate } from "react-router-dom";
 import { FaEdit, FaTrash, FaPlus, FaList } from "react-icons/fa";
 import IconButton from "../../components/ui/IconButton";
+import { getTempleIdFromToken } from "../../utils/token";
 
 function DeityTablePage() {
   const navigate = useNavigate();
-  const temple_id = localStorage.getItem("temple_id"); // ✅ Get current temple_id
+  
+const temple_id = getTempleIdFromToken();
+  // const temple_id = localStorage.getItem("temple_id"); // ✅ Get current temple_id
 
   const columns = [
     { field: "id", label: "ID" },
@@ -65,6 +68,7 @@ function DeityTablePage() {
     try {
       await apiDelete(`/deity/${dialog.item.id}`);
       setAlert({ type: "success", message: `✅ ${dialog.item.name} deleted!` });
+      
       fetchData();
     } catch (err) {
       console.error(err);
@@ -73,6 +77,12 @@ function DeityTablePage() {
       setDialog({ open: false, item: null });
     }
   };
+  useEffect(() => {
+  if (alert) {
+    const timer = setTimeout(() => setAlert(null), 3000);
+    return () => clearTimeout(timer);
+  }
+}, [alert]);
 
   const handleEdit = (item) => navigate(`/deity/edit/${item.id}`);
 

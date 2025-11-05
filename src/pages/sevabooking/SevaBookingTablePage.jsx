@@ -12,10 +12,11 @@ import { useNavigate, Link } from "react-router-dom";
 import { FaEdit, FaTrash, FaPlus, FaTimes } from "react-icons/fa";
 import IconButton from "../../components/ui/IconButton";
 import "./sevabooking.css";
-
+import { getTempleIdFromToken } from "../../utils/token";
 function SevaBookingTablePage() {
   const navigate = useNavigate();
-  const temple_id = localStorage.getItem("temple_id");
+  const temple_id = getTempleIdFromToken();
+  // const temple_id = localStorage.getItem("temple_id");
 
   const columns = [
     { field: "id", label: "ID" },
