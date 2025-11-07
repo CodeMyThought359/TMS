@@ -31,12 +31,18 @@ function SevaBookingPage() {
   const [devotees, setDevotees] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // ✅ Fetch dropdown options (Devotees, Deities, Sevas)
+  // ✅ Compute tomorrow’s date
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+  const minDate = tomorrow.toISOString().split("T")[0];
+
+  // ✅ Fetch dropdown options
   useEffect(() => {
     const fetchOptions = async () => {
       setLoading(true);
       try {
-        // Devotees
+        // --- Devotees ---
         const devoteeRes = await apiGet("/devotees", {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -47,14 +53,13 @@ function SevaBookingPage() {
           }))
         );
 
-        // Deities (filter by temple_id)
+        // --- Deities ---
         let deityRes;
         try {
           deityRes = await apiGet(`/deity?temple_id=${temple_id}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
-        } catch (err) {
-          console.warn("Backend did not filter deities; applying client filter.");
+        } catch {
           deityRes = await apiGet("/deity", {
             headers: { Authorization: `Bearer ${token}` },
           });
@@ -63,18 +68,15 @@ function SevaBookingPage() {
         const filteredDeities = allDeities.filter(
           (d) => String(d.temple_id) === String(temple_id)
         );
-        setDeities(
-          filteredDeities.map((d) => ({ value: d.name, label: d.name }))
-        );
+        setDeities(filteredDeities.map((d) => ({ value: d.name, label: d.name })));
 
-        // Sevas (filter by temple_id)
+        // --- Sevas ---
         let sevaRes;
         try {
           sevaRes = await apiGet(`/seva?temple_id=${temple_id}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
-        } catch (err) {
-          console.warn("Backend did not filter sevas; applying client filter.");
+        } catch {
           sevaRes = await apiGet("/seva", {
             headers: { Authorization: `Bearer ${token}` },
           });
@@ -83,7 +85,7 @@ function SevaBookingPage() {
         const filteredSevas = allSevas.filter(
           (s) => String(s.temple_id) === String(temple_id)
         );
-        setSevas(filteredSevas.map((s) => ({ value: s.name, label: s.name })));
+        setSevas(filteredSevas); // 👈 Keep full seva data (not just names)
       } catch (err) {
         console.error("Failed to fetch options", err);
         setAlert({ type: "error", message: "❌ Failed to load form options" });
@@ -95,6 +97,22 @@ function SevaBookingPage() {
     if (temple_id && token) fetchOptions();
   }, [temple_id, token]);
 
+  // ✅ Input Change Handler (auto-fill amount when seva selected)
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    let updatedForm = { ...form, [name]: value };
+
+    // 👇 Auto-fill amount based on seva_name
+    if (name === "seva_name") {
+      const selectedSeva = sevas.find((s) => s.name === value);
+      if (selectedSeva) {
+        updatedForm.amount = selectedSeva.amount || "";
+      }
+    }
+
+    setForm(updatedForm);
+  };
+
   // ✅ Form fields
   const fields = [
     {
@@ -103,7 +121,13 @@ function SevaBookingPage() {
       type: "select",
       options: [{ value: "", label: "Select Devotee" }, ...devotees],
     },
-    { name: "seva_date", label: "Seva Date", type: "date" },
+    {
+      name: "seva_date",
+      label: "Seva Date",
+      type: "date",
+      min: minDate,
+      placeholder: "Select Seva Date",
+    },
     {
       name: "deity_name",
       label: "Deity",
@@ -114,9 +138,18 @@ function SevaBookingPage() {
       name: "seva_name",
       label: "Seva",
       type: "select",
-      options: [{ value: "", label: "Select Seva" }, ...sevas],
+      options: [
+        { value: "", label: "Select Seva" },
+        ...sevas.map((s) => ({ value: s.name, label: s.name })),
+      ],
     },
-    { name: "amount", label: "Amount", type: "number", placeholder: "Enter Amount" },
+    {
+      name: "amount",
+      label: "Amount",
+      type: "number",
+      placeholder: "Enter Amount",
+      readOnly: true, // 👈 prevent manual editing (auto-filled)
+    },
     {
       name: "gothra",
       label: "Gothra",
@@ -159,10 +192,6 @@ function SevaBookingPage() {
     },
   ];
 
-  // ✅ Input Change
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
-
   // ✅ Submit Handler
   const handleSubmit = async () => {
     try {
@@ -186,7 +215,6 @@ function SevaBookingPage() {
 
       setAlert({ type: "success", message: "✅ Booking created successfully!" });
 
-      // Reset form
       setForm({
         devotee_name: "",
         seva_date: "",
@@ -200,7 +228,6 @@ function SevaBookingPage() {
         status: "confirmed",
       });
 
-      // Optionally redirect after a delay
       // navigate("/seva-bookings-table");
     } catch (err) {
       console.error("Booking API Error:", err);
