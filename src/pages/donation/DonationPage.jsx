@@ -7,17 +7,19 @@ import Form from "../../components/ui/Form";
 import { apiGet, apiPost } from "../../utils/helpers";
 import IconButton from "../../components/ui/IconButton";
 import { FaList } from "react-icons/fa";
+import { getTempleIdFromToken } from "../../utils/token";
 
 
 function DonationPage() {
   const navigate = useNavigate();
+  const temple_id = getTempleIdFromToken();
   const token = localStorage.getItem("token");
 
   const [form, setForm] = useState({
     amount: "",
     payment_method: "cash",
     remarks: "",
-    temple_id: "",
+    temple_id: temple_id || "",
     user_id: "",
   });
 
@@ -42,15 +44,16 @@ function DonationPage() {
           }))
         );
 
-        const templeRes = await apiGet("/temples", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setTemples(
-          (templeRes.data || templeRes).map((t) => ({
-            value: t.id,
-            label: t.name,
-          }))
-        );
+        // const templeRes = await apiGet("/temples", {
+        //   headers: { Authorization: `Bearer ${token}` },
+        // });
+        // setTemples(
+        //   (templeRes.data || templeRes).map((t) => ({
+        //     value: t.id,
+        //     label: t.name,
+        //   }))
+        // );
+          
       } catch (err) {
         console.error("Failed to load data", err);
         setAlert({ type: "error", message: "❌ Failed to load donation form" });
@@ -74,12 +77,12 @@ function DonationPage() {
       ],
     },
     { name: "remarks", label: "Remarks", type: "textarea" },
-    {
-      name: "temple_id",
-      label: "Temple",
-      type: "select",
-      options: [{ value: "", label: "Select Temple" }, ...temples],
-    },
+    // {
+    //   name: "temple_id",
+    //   label: "Temple",
+    //   type: "select",
+    //   options: [{ value: "", label: "Select Temple" }, ...temples],
+    // },
     {
       name: "user_id",
       label: "Devotee",
@@ -100,10 +103,11 @@ function DonationPage() {
       });
       setAlert({ type: "success", message: "✅ Donation added successfully!" });
       setForm({
+        
         amount: "",
         payment_method: "cash",
         remarks: "",
-        temple_id: "",
+         temple_id: temple_id || "",
         user_id: "",
       });
 
