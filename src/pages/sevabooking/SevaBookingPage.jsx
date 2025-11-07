@@ -2,15 +2,20 @@ import React, { useState, useEffect } from "react";
 import Form from "../../components/ui/Form";
 import Alert from "../../components/ui/Alert";
 import { apiGet, apiPost } from "../../utils/helpers";
-import {isFutureDate} from "../../utils/date"
+import { isFutureDate } from "../../utils/date";
 import { useNavigate, Link } from "react-router-dom";
 import Button from "../../components/ui/Button";
+import { getTempleIdFromToken } from "../../utils/token";
 
 function SevaBookingPage() {
+  const temple_id = getTempleIdFromToken();
+  const token = localStorage.getItem("token");
+  const navigate = useNavigate();
+
   const [form, setForm] = useState({
     devotee_name: "",
     seva_date: "",
-    temple_id: "",
+    temple_id: temple_id || "",
     deity_name: "",
     seva_name: "",
     gothra: "",
@@ -21,16 +26,15 @@ function SevaBookingPage() {
   });
 
   const [alert, setAlert] = useState(null);
-  const [temples, setTemples] = useState([]);
   const [deities, setDeities] = useState([]);
   const [sevas, setSevas] = useState([]);
   const [devotees, setDevotees] = useState([]);
-  const token = localStorage.getItem("token");
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
-  // Fetch dropdown options
+  // ✅ Fetch dropdown options (Devotees, Deities, Sevas)
   useEffect(() => {
     const fetchOptions = async () => {
+      setLoading(true);
       try {
         // Devotees
         const devoteeRes = await apiGet("/devotees", {
@@ -43,48 +47,55 @@ function SevaBookingPage() {
           }))
         );
 
-        // Temples
-        const templeRes = await apiGet("/temples", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setTemples(
-          (templeRes.data || templeRes).map((t) => ({
-            value: t.id,
-            label: t.name,
-          }))
+        // Deities (filter by temple_id)
+        let deityRes;
+        try {
+          deityRes = await apiGet(`/deity?temple_id=${temple_id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+        } catch (err) {
+          console.warn("Backend did not filter deities; applying client filter.");
+          deityRes = await apiGet("/deity", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+        }
+        const allDeities = deityRes.data || deityRes;
+        const filteredDeities = allDeities.filter(
+          (d) => String(d.temple_id) === String(temple_id)
         );
-
-        // Deities
-        const deityRes = await apiGet("/deity", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
         setDeities(
-          (deityRes.data || deityRes).map((d) => ({
-            value: d.name,
-            label: d.name,
-          }))
+          filteredDeities.map((d) => ({ value: d.name, label: d.name }))
         );
 
-        // Sevas
-        const sevaRes = await apiGet("/seva", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setSevas(
-          (sevaRes.data || sevaRes).map((s) => ({
-            value: s.name,
-            label: s.name,
-          }))
+        // Sevas (filter by temple_id)
+        let sevaRes;
+        try {
+          sevaRes = await apiGet(`/seva?temple_id=${temple_id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+        } catch (err) {
+          console.warn("Backend did not filter sevas; applying client filter.");
+          sevaRes = await apiGet("/seva", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+        }
+        const allSevas = sevaRes.data || sevaRes;
+        const filteredSevas = allSevas.filter(
+          (s) => String(s.temple_id) === String(temple_id)
         );
+        setSevas(filteredSevas.map((s) => ({ value: s.name, label: s.name })));
       } catch (err) {
         console.error("Failed to fetch options", err);
-        setAlert({ type: "error", message: "Failed to load form options" });
+        setAlert({ type: "error", message: "❌ Failed to load form options" });
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchOptions();
-  }, [token]);
+    if (temple_id && token) fetchOptions();
+  }, [temple_id, token]);
 
-  // Form fields
+  // ✅ Form fields
   const fields = [
     {
       name: "devotee_name",
@@ -93,12 +104,6 @@ function SevaBookingPage() {
       options: [{ value: "", label: "Select Devotee" }, ...devotees],
     },
     { name: "seva_date", label: "Seva Date", type: "date" },
-    {
-      name: "temple_id",
-      label: "Temple",
-      type: "select",
-      options: [{ value: "", label: "Select Temple" }, ...temples],
-    },
     {
       name: "deity_name",
       label: "Deity",
@@ -154,23 +159,24 @@ function SevaBookingPage() {
     },
   ];
 
-  // Handle input change
+  // ✅ Input Change
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
-  // Handle form submission
+  // ✅ Submit Handler
   const handleSubmit = async () => {
     try {
       if (!isFutureDate(form.seva_date)) {
-      setAlert({
-        type: "warning",
-        message: "⚠️ Please select a future date for Seva.",
-      });
-      return;
-    }
+        setAlert({
+          type: "warning",
+          message: "⚠️ Please select a future date for Seva.",
+        });
+        return;
+      }
+
       const payload = {
         ...form,
-        temple_id: form.temple_id ? parseInt(form.temple_id) : null,
+        temple_id: parseInt(temple_id),
         amount: form.amount ? parseFloat(form.amount) : 0,
       };
 
@@ -184,7 +190,7 @@ function SevaBookingPage() {
       setForm({
         devotee_name: "",
         seva_date: "",
-        temple_id: "",
+        temple_id: temple_id || "",
         deity_name: "",
         seva_name: "",
         gothra: "",
@@ -193,8 +199,11 @@ function SevaBookingPage() {
         amount: "",
         status: "confirmed",
       });
+
+      // Optionally redirect after a delay
+      // navigate("/seva-bookings-table");
     } catch (err) {
-      console.error("Booking API Error:", err.response || err);
+      console.error("Booking API Error:", err);
       setAlert({
         type: "error",
         message: err.response?.data?.message || "❌ Failed to create booking",
@@ -206,7 +215,7 @@ function SevaBookingPage() {
     <div className="p-6">
       <div className="header flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold">➕ Seva Booking</h2>
-        <Button className="add-btn">
+        <Button>
           <Link to="/seva-bookings-table">Seva Booking List</Link>
         </Button>
       </div>
@@ -222,7 +231,8 @@ function SevaBookingPage() {
         values={form}
         onChange={handleChange}
         onSubmit={handleSubmit}
-        submitLabel="Create Booking"
+        submitLabel={loading ? "Loading..." : "Create Booking"}
+        disabled={loading}
       />
     </div>
   );
