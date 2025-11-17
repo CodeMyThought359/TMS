@@ -9,10 +9,11 @@ import Dialog from "../../components/ui/Dialog";
 import Loader from "../../components/ui/Loader";
 import { apiGet, apiPut, apiDelete } from "../../utils/helpers";
 import { useNavigate, Link } from "react-router-dom";
-import { FaEdit, FaTrash, FaPlus, FaTimes } from "react-icons/fa";
+import { FaEdit, FaTrash, FaPlus, FaTimes,FaRegFile } from "react-icons/fa";
 import IconButton from "../../components/ui/IconButton";
 import "./sevabooking.css";
 import { getTempleIdFromToken } from "../../utils/token";
+
 function SevaBookingTablePage() {
   const navigate = useNavigate();
   const temple_id = getTempleIdFromToken();
@@ -70,7 +71,9 @@ function SevaBookingTablePage() {
   }, [temple_id]);
 
   const handleEdit = (item) => navigate(`/seva-bookings/edit/${item.id}`);
-
+const handleReport = (item) => {
+  navigate(`/seva-report/report/${item.id}`);
+};
   // Cancel booking dialog
   const handleCancel = (item) => {
     setCancelDialog({ open: true, item });
@@ -132,6 +135,12 @@ function SevaBookingTablePage() {
           data={data}
           renderRowActions={(row) => (
             <>
+              <IconButton
+                icon={FaRegFile}
+                variant="secondary"
+                onClick={() => handleReport(row)}
+              />  
+
               <IconButton
                 icon={FaEdit}
                 variant="secondary"

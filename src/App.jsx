@@ -60,7 +60,7 @@ import EditDeityPage from "./pages/deity/EditDeityPage";
 import SevaBookingsPage from "./pages/sevabooking/SevaBookingPage"
 import SevaBookingTablePage from "./pages/sevabooking/SevaBookingTablePage";
 import EditSevaBookingPage from "./pages/sevabooking/EditSevaBookingPage";
-
+import ReportSevaBookingPage from "./pages/sevabooking/ReportSevaBookingPage.jsx";
 // seva
 import SevaPage from "./pages/seva/SevaPage";
 import SevaTablePage from "./pages/seva/SevaTablePage";
@@ -108,6 +108,8 @@ function App() {
             <Route path="/seva-bookings" element={<SevaBookingsPage />} />
             <Route path="/seva-bookings-table" element={<SevaBookingTablePage />} />
             <Route path="/seva-bookings/edit/:id" element={<EditSevaBookingPage />} />
+            <Route path="/seva-report/report/:id" element={<ReportSevaBookingPage />} />
+
           </Route>
           <Route element={<ModuleProtectedRoute moduleName="deity" />}>
             <Route path="/deity" element={<DeityPage />} />
