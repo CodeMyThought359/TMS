@@ -18,9 +18,11 @@ const login = (req, res) => {
   if (!email && !phone && !name)
     return res.status(400).json({ message: "Email, phone, or name required" });
 
-  const field = email ? "email" : phone ? "phone" : "name";
-  const value = email || phone || name;
+  // const field = email ? "email" : phone ? "phone" : "name";
+  // const value = email || phone || name;
 
+    const field = email ? "email" : phone ? "phone" : "name";
+  const value = email || phone ;
   db.query(`SELECT * FROM admin WHERE ${field} = ?`, [value], (err, results) => {
     if (err) return res.status(500).json({ message: "Database error" });
     if (results.length === 0) return res.status(401).json({ message: "Invalid credentials" });
