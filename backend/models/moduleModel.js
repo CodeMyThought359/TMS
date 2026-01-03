@@ -1,14 +1,3 @@
-// const db = require("../config/db");
-
-// const Module = {
-//   getAll: (callback) => {
-//     db.query("SELECT * FROM modules", callback);
-//   },
-// };
-
-// module.exports = Module;
-
-
 
 
 const db = require("../config/db");

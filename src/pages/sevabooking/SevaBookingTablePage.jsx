@@ -118,7 +118,9 @@ const handleReport = (item) => {
         <h2>📋 Seva Bookings</h2>
         <div style={{ display: "flex", gap: "8px" }}>
           <IconButton icon={FaPlus} label="Add Seva Booking" to="/seva-bookings" />
+            <IconButton icon={FaPlus} label="Cancel Seva Booking List" to="/seva-cancel" />
         </div>
+        
       </div>
 
       {alert && (

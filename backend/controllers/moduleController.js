@@ -1,11 +1,3 @@
-// const Module = require("../models/moduleModel");
-
-// exports.getAllModules = (req, res) => {
-//   Module.getAll((err, modules) => {
-//     if (err) return res.status(500).json({ error: "Failed to fetch modules" });
-//     res.json(modules);
-//   });
-// };
 
 const Module = require("../models/moduleModel");
 
