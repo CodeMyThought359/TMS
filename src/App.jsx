@@ -4,6 +4,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 // login
 import LoginPage from "./pages/Auth/LoginPage";
+import ResetPasswordPage from "./pages/Auth/ResetPasswordPage";
 // layout
 import Layout from "./components/layout/Layout";
 // dashboard
@@ -75,7 +76,7 @@ function App() {
     <Routes>
       {/* Public Route */}
       <Route path="/" element={<LoginPage />} />
-
+ <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
       {/* Layout wrapper for authenticated pages */}
       <Route element={<Layout />}>
         {/* Everyone logged-in */}

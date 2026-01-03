@@ -35,23 +35,39 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// ✅ Generic API call wrapper
-export async function apiCall(url, method = "GET", data, config = {}) {
+// // ✅ Generic API call wrapper
+// export async function apiCall(url, method = "GET", data, config = {}) {
+//   try {
+//     const options = { url, method, ...config };
+
+//     // ❌ Do NOT send body for GET or DELETE
+//     if (data && method !== "GET" && method !== "DELETE") {
+//       options.data = data;
+//     }
+
+//     const response = await api(options);
+//     return response.data;
+//   } catch (error) {
+//     console.error("API Error:", error);
+//     throw error.response?.data || error.message;
+//   }
+// }
+export async function apiCall(url, method = "GET", data) {
   try {
-    const options = { url, method, ...config };
-
-    // ❌ Do NOT send body for GET or DELETE
-    if (data && method !== "GET" && method !== "DELETE") {
-      options.data = data;
-    }
-
-    const response = await api(options);
-    return response.data;
+    const res = await api({ url, method, data });
+    return res.data;
   } catch (error) {
-    console.error("API Error:", error);
-    throw error.response?.data || error.message;
+    throw {
+      message:
+        error.response?.data?.message ||
+        error.message ||
+        "Something went wrong",
+    };
   }
 }
+
+export const resetPasswordApi = (token, data) =>
+  apiPost(`/login/reset-password/${token}`, data);
 
 // ✅ Convenience helpers
 export const apiGet = (url, config) => apiCall(url, "GET", null, config);
@@ -63,7 +79,7 @@ export const apiDelete = (url, config) => apiCall(url, "DELETE", null, config);
 export const loginApi = (data) => apiPost("/login", data);
 export const forgotPasswordApi = (data) => apiPost("/login/forgot-password", data);
 export const verifyOtpApi = (data) => apiPost("/login/verify-otp", data);
-export const resetPasswordApi = (data) => apiPost("/login/reset-password", data);
+// export const resetPasswordApi = (data) => apiPost("/login/reset-password", data);
 
 
 // ✅ Change password (for logged-in users)

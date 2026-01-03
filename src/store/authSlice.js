@@ -235,7 +235,17 @@ export const forgotPassword = createAsyncThunk(
     }
   }
 );
-
+// 🔹 Reset Password (Email or Phone)
+// export const resetPassword = createAsyncThunk(
+//   "auth/resetPassword",
+//   async (payload, { rejectWithValue }) => {
+//     try {
+//       return await resetPasswordApi(payload); // payload = { email/phone, otp, newPassword }
+//     } catch (err) {
+//       return rejectWithValue(err.message || "Reset failed");
+//     }
+//   }
+// );
 // 🔹 Change Password (Logged-in user)
 export const changePassword = createAsyncThunk(
   "auth/changePassword",

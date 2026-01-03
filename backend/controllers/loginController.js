@@ -205,11 +205,41 @@ const forgotPassword = (req, res) => {
 };
 
 /* ================= RESET PASSWORD USING LINK ================= */
-const resetPassword = (req, res) => {
-  const { token, newPassword } = req.body;
+// const resetPassword = (req, res) => {
+//   const { token, newPassword } = req.body;
 
-  if (!token || !newPassword)
-    return res.status(400).json({ message: "Token and password required" });
+//   if (!token || !newPassword)
+//     return res.status(400).json({ message: "Token and password required" });
+
+//   db.query(
+//     "SELECT * FROM admin WHERE reset_token=? AND reset_token_expiry > ?",
+//     [token, Date.now()],
+//     (err, results) => {
+//       if (err) return res.status(500).json({ message: "DB error" });
+//       if (!results.length)
+//         return res.status(400).json({ message: "Invalid or expired link" });
+
+//       const admin = results[0];
+//       const hashed = bcrypt.hashSync(newPassword, 10);
+
+//       db.query(
+//         "UPDATE admin SET password=?, reset_token=NULL, reset_token_expiry=NULL WHERE id=?",
+//         [hashed, admin.id],
+//         (err) => {
+//           if (err) return res.status(500).json({ message: "DB error" });
+//           res.json({ message: "Password reset successful" });
+//         }
+//       );
+//     }
+//   );
+// };
+const resetPassword = (req, res) => {
+  const { token } = req.params;
+  const { password } = req.body;
+
+  if (!token || !password) {
+    return res.status(400).json({ message: "Invalid request" });
+  }
 
   db.query(
     "SELECT * FROM admin WHERE reset_token=? AND reset_token_expiry > ?",
@@ -219,21 +249,18 @@ const resetPassword = (req, res) => {
       if (!results.length)
         return res.status(400).json({ message: "Invalid or expired link" });
 
-      const admin = results[0];
-      const hashed = bcrypt.hashSync(newPassword, 10);
+      const hashed = bcrypt.hashSync(password, 10);
 
       db.query(
         "UPDATE admin SET password=?, reset_token=NULL, reset_token_expiry=NULL WHERE id=?",
-        [hashed, admin.id],
-        (err) => {
-          if (err) return res.status(500).json({ message: "DB error" });
+        [hashed, results[0].id],
+        () => {
           res.json({ message: "Password reset successful" });
         }
       );
     }
   );
 };
-
 /* ================= CHANGE PASSWORD (LOGGED IN) ================= */
 const changePassword = (req, res) => {
   const { oldPassword, newPassword } = req.body;
