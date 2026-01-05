@@ -12,9 +12,12 @@ import IconButton from "../../components/ui/IconButton";
 function UserTypeTablePage() {
   const columns = [
     { field: "id", label: "ID" },
+    {field: "user_name", label: "user Name" },
     { field: "name", label: "Role Name" },
     { field: "description", label: "Description" },
-    { field: "temple_id", label: "Temple ID" },
+    // { field: "temple_id", label: "Temple ID" },
+    {field: "user_email", label: "User Email" },
+    {field: "user_password", label: "User Password" },
   ];
 
   const [data, setData] = useState([]);
@@ -87,9 +90,9 @@ function UserTypeTablePage() {
           renderRowActions={(row) => (
             <div style={{ display: "flex", gap: "6px" }}>
               <IconButton icon={FaEdit} variant="secondary" onClick={() => handleEdit(row)} />
-              {role === "admin" && (
+              {/* {role === "admin" && (
                 <IconButton icon={FaTrash} variant="destructive" onClick={() => handleDelete(row)} />
-              )}
+              )} */}
             </div>
           )}
         />

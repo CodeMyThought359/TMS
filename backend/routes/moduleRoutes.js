@@ -11,4 +11,8 @@ router.post("/", moduleController.createModule);
 router.put("/:id", moduleController.updateModule);
 router.delete("/:id", moduleController.deleteModule);
 
+// Temple-wise enabled modules
+router.get("/temple/:templeId", moduleController.getEnabledModulesByTemple);
+
+
 module.exports = router;

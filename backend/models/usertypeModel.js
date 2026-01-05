@@ -21,8 +21,8 @@ const UserTypeModel = {
   create: (data) =>
     new Promise((resolve, reject) => {
       db.query(
-        "INSERT INTO usertype (name, description, temple_id) VALUES (?, ?, ?)",
-        [data.name, data.description || "", data.temple_id || null],
+        "INSERT INTO usertype (name, user_name, description, temple_id, user_email, user_password) VALUES (?, ?, ?, ?, ?, ?)",
+        [data.name, data.user_name || null, data.description || "", data.temple_id || null, data.user_email || null, data.user_password || null],
         (err, result) => (err ? reject(err) : resolve(result))
       );
     }),

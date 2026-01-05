@@ -9,4 +9,5 @@ router.post("/", UserTypeController.createUserType);
 router.put("/:id", UserTypeController.updateUserType);
 router.delete("/:id", UserTypeController.deleteUserType);
 
+
 module.exports = router;

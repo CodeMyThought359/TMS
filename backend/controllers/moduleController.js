@@ -45,6 +45,12 @@ exports.deleteModule = (req, res) => {
   });
 };
 
-
-
+// Get enabled modules for a temple
+exports.getEnabledModulesByTemple = (req, res) => {
+  const { templeId } = req.params;
+  Module.getEnabledByTemple(templeId, (err, modules) => {
+    if (err) return res.status(500).json({ error: "Failed to fetch temple modules" });
+    res.json(modules);
+  });
+};
 

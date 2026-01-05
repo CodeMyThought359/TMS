@@ -42,6 +42,7 @@ app.use("/api/temples", templeRoutes);
 app.use("/api/modules", moduleRoutes);
 
 app.use("/api/templeModules", templeModuleRoutes);
+app.use("/api/modules", moduleRoutes);
 app.use("/api/login", loginRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/donations", donationRoutes);

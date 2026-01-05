@@ -175,14 +175,14 @@ function Sidebar() {
         )}
 
         {/* Donation Type */}
-        {role === "admin" && (
+        {/* {role === "admin" && (
           <Link
             to="/donation-type-table"
             className={`sidebar-link ${isActive("/donation-type-table") ? "active" : ""}`}
           >
             <FaPiggyBank /> Donation Type
           </Link>
-        )}
+        )} */}
 
         {/* User Type */}
         {role === "admin" && (
@@ -190,7 +190,7 @@ function Sidebar() {
             to="/user-type-table"
             className={`sidebar-link ${isActive("/user-type-table") ? "active" : ""}`}
           >
-            <FaUserTie /> User Type
+            <FaUserTie /> User Role
           </Link>
         )}
       </nav>
