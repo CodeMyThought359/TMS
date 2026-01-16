@@ -19,16 +19,18 @@ import AssignModules from './pages/superAdmin/AssignModules';
 import BookingPage from './pages/templeAdmin/BookingPage';
 import SevaPage from './pages/templeAdmin/SevaPage';
 import DonationPage from './pages/templeAdmin/DonationPage';
-
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+      <ToastContainer position="top-right" autoClose={1000} />
         <Routes>
-
+          
           {/* ---------- PUBLIC ---------- */}
           <Route path="/login" element={<Login />} />
-< Route path="/forgot" element={<Forgot />} />
+         < Route path="/forgot" element={<Forgot />} />
           {/* ---------- DEFAULT ---------- */}
           <Route path="/" element={<Navigate to="/login" />} />
 

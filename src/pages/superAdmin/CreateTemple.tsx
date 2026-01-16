@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import { CreateTempleForm } from '../../types/createTemple';
+import { toast } from "react-toastify";
 
 type Temple = CreateTempleForm & { id: number };
 
@@ -46,16 +47,20 @@ const CreateTemple = () => {
     try {
       if (editingId) {
         await api.put(`/super/temple/${editingId}`, form);
-        alert('Temple updated successfully');
+        // alert('Temple updated successfully');
+         toast.success("Temple updated successfully");
       } else {
         await api.post('/super/temple', form);
-        alert('Temple created successfully');
+         toast.success("Temple created successfully");
+        // alert('Temple created successfully');
+        // toast.success("Temple updated successfully");
       }
 
       resetForm();
       fetchTemples();
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Something went wrong');
+      // alert(err.response?.data?.message || 'Something went wrong');
+       toast.error(err.response?.data?.message || "Something went wrong");
     }
   };
 
@@ -74,9 +79,12 @@ const CreateTemple = () => {
 
   // DELETE
   const deleteTemple = async (id: number) => {
-    if (!window.confirm('Are you sure you want to delete this temple?')) return;
+    if (!window.confirm('Are you sure you want to delete this temple?'))
+      
+      return;
 
     await api.delete(`/super/temple/${id}`);
+     toast.success("Temple deleted successfully");
     fetchTemples();
   };
 
@@ -95,6 +103,7 @@ const InActiveTemple = async (id: number) => {
   if (!window.confirm('Change temple status?')) return;
 
   await api.patch(`/super/temple-toggle/${id}`);
+    toast.info("Temple status updated");
   fetchTemples(); // refresh list
 };
 

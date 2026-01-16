@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import { AssignTempleAdminForm } from '../../types/assignTempleAdmin';
 import { CreateTempleForm } from '../../types/createTemple';
-
+import { toast } from "react-toastify";
 interface TempleUser {
   id: number;
   name: string;
@@ -75,16 +75,16 @@ const AssignTempleAdmin = () => {
     try {
       if (editingId) {
         await api.put(`/super/temple-admin/${editingId}`, form);
-        alert('Temple Admin updated');
+        toast.success('Temple Admin updated');
       } else {
         await api.post('/super/assign-temple-admin', form);
-        alert('Temple Admin assigned');
+        toast.success('Temple Admin assigned');
       }
 
       resetForm();
       fetchTempleUsers();
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Error');
+      toast.success(err.response?.data?.message || 'Error');
     }
   };
 
@@ -104,11 +104,13 @@ const AssignTempleAdmin = () => {
   const deleteUser = async (id: number) => {
     if (!window.confirm('Delete this admin?')) return;
     await api.delete(`/super/temple-admin/${id}`);
+    toast.success("Temple Admin deleted");
     fetchTempleUsers();
   };
 
   const toggleStatus = async (id: number) => {
     await api.patch(`/super/temple-admin-toggle/${id}`);
+    toast.success("Temple Admin status updated");
     fetchTempleUsers();
   };
 
